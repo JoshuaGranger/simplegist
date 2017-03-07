@@ -1,11 +1,11 @@
 import requests
 import json
 
-from config import USERNAME, API_TOKEN, BASE_URL, GIST_URL
+from .config import USERNAME, API_TOKEN, BASE_URL, GIST_URL
 
-from mygist import Mygist
-from do import Do
-from comments import Comments
+from .mygist import Mygist
+from .do import Do
+from .comments import Comments
 
 class Simplegist:
 	"""
@@ -78,7 +78,7 @@ class Simplegist:
 		url = '/gists'
 
 		data = {"description": self.description,
-  				"public": self.public,
+  				"public": bool(self.public),
   				"files": {
     				self.gist_name: {
       				"content": self.content
@@ -89,17 +89,11 @@ class Simplegist:
 		r = requests.post(
 			'%s%s' % (BASE_URL, url),
 			data=json.dumps(data),
-			headers=self.header
-		)
-		if (r.status_code == 201):
-			response = {
-			'Gist-Link': '%s/%s/%s' %(GIST_URL,self.username,r.json()['id']),
-			'Clone-Link': '%s/%s.git' %(GIST_URL,r.json()['id']),
-			'Embed-Script': '<script src="%s/%s/%s.js"</script>' %(GIST_URL,self.username,r.json()['id']),
-			'id': r.json()['id'],
-			'created_at': r.json()['created_at'],
+			headers=self.header)
 
-			}
+		if (r.status_code == 201):
+			response = r.json()
+			# response['url'] is a page which provides the json output in
+			# a web browser. Use it to see all possible keys
 			return response
 		raise Exception('Gist not created: server response was [%s] %s' % (r.status_code, r.text))
-
